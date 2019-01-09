@@ -15,6 +15,7 @@ for csv in all_csv:
 	columns = {} #columns['lama'] = 'baru'
 	df_convo = pd.read_csv(csv, index_col=0)
 	headers = list(df_convo)
+	follower_status = False
 	for x in headers:
 		header = x.lower()
 		#post_id
@@ -32,6 +33,7 @@ for csv in all_csv:
 		#follower_count
 		elif 'follower' in header:
 			columns[header] = 'follower_count'
+			follower_status = True
 		#following_count
 		elif 'following' in header:
 			columns[header] = 'following_count'
@@ -53,7 +55,8 @@ for csv in all_csv:
 	list_column = []
 	for i in columns.values():
 		list_column.append(i)
-	print("list_column : " + str(len(list_column)))
-	print("list_headers : " + str(len(headers)))
+	if follower_status == False:
+		print("[" + csv + " " + 'has no follower/following information]')
+		output_name = 'Invalid_' + csv
 	new_df_convo[list_column].to_csv(output_name)
-	print(output_name)
+print('Done')
