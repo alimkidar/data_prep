@@ -1,0 +1,10 @@
+﻿fieldname,contain,not_contain,
+post_id,post+id,,y
+caption,text/caption/conversation/convo,,
+comment_count,comment,,y
+follower_count,follower,,y
+following_count,following,,y
+like_count,like,user,y
+timestamp,time+stamp,,y
+user_id,user+id,,y
+username,user+name,,y
