@@ -110,6 +110,8 @@ for csv in all_csv:
 		if field_input not in columns:
 			columns[field_input] = field_input
 			
+	for i in list_field_rule:
+		if i not in
 	print(columns)
 
 	new_df_convo = df_convo.rename(index=str, columns=columns)
@@ -120,11 +122,16 @@ for csv in all_csv:
 list_column = []
 for i in columns.values():
 	list_column.append(i)
+
+#Add fieldname if there is no fieldname_rule in input_files
+for i in list_field_rule:
+	if i not in list_column:
+		df_all[i] = ''
 df_all[list_column].to_csv(output_name)
 print('		[saved as ' + output_name+']')
-'''
 
 
+''' Old Code
 			for word in contain_rules_split:
 				if word in field_input:
 					fish = True
