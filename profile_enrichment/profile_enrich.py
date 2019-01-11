@@ -94,9 +94,7 @@ def insta(user_name):
 		'status': status
 		})
 	return profile
-
 #------------------ DATA LOADING --------------------------------
-
 print ("Memulai")
 dict_profile = []
 hit = 1
