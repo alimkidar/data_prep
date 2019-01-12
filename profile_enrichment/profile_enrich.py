@@ -100,7 +100,9 @@ dict_profile = []
 hit = 1
 
 for index, row in convo.iterrows():
-	username = row[head_username]
+	username = str(row[head_username])
+	if username == 'nan':
+		username = ''
 	profile = insta(username)
 	user_id = profile['user_id']
 	dict_profile.append(profile)
