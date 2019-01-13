@@ -1,7 +1,6 @@
 import os
 from os import listdir
 import pandas as pd
-import numpy as np
 
 def find_csv_filenames( path_to_dir, suffix=".csv" ):
     filenames = listdir(path_to_dir)
@@ -15,33 +14,13 @@ def no_space(text_):
 			text_ = text_.replace(' ','')
 		else:
 			space_satus = False
+		text_ = text_.lower()
 	return text_
-
-
+def split_by(word_, char_):
+	word = word_.split(char_)
+	return(word)
 #Load Rules
 df_rules = pd.read_csv('rules.csv')
-dict_contain = {}
-dict_not_contain = {}
-fieldname_list = []
-for index, row in df_rules.iterrows():
-	fieldname = row['fieldname']
-	contain = no_space(row['contain'])
-	not_contain = no_space(row['not_contain'])
-
-	#Parsing by slash /
-	slash_contain = contain.split('/')
-	slash_not_contain = not_contain.split('/')
-
-	#Add to dict
-	dict_contain[fieldname] = slash_contain
-	dict_not_contain[fieldname] = slash_not_contain
-	
-
-	if fieldname not in fieldname_list:
-		fieldname_list.append(fieldname)
-
-#===============================Rules end=================================
-
 cwd = os.getcwd()
 all_csv = find_csv_filenames(cwd)
 
@@ -55,136 +34,79 @@ else:
 	print(' ')
 	print(' ')
 	print(' ')
-	print(' ')
 
-
-fish_contain = False
-fish_not_contain = False
+output_name = "convo_converted.csv"
 list_field_rule = []
-output_name = "convo_result.csv"
-#setiap csv
 for csv in all_csv:
-	columns = {} #columns['lama'] = 'baru'
-	df_convo = pd.read_csv(csv, index_col=False)
+	columns = {} #columns['old'] = 'new'
+	df_convo = pd.read_csv(csv, index_col=False, encoding='utf-8')
 	headers = list(df_convo)
-	follower_status = False
-	# untuk setiap fieldinput di csv input
+	follower_status = False	
 	print('			[Converting ' + csv + ']')
+	# for every fieldname in input file
 	for field_input_ in headers:
 		field_input = field_input_.lower()
-		#untuk setiap fieldrule di csv rule
-		for field_rule_ in dict_contain.keys():
-			field_rule = field_rule_.lower()
-			if field_rule_ not in list_field_rule:
-				list_field_rule.append(field_rule_)
-			contain_rules_split_ = dict_contain[field_rule_]
-			for rule in contain_rules_split_:
-				contain_rules_split = rule.split('+')
-				rule_count = len(contain_rules_split)
-				for word in contain_rules_split:
-					if word.lower() in field_input:
-						rule_count -= 1
-				if rule_count > 0:
-					fish_contain = False
-				else:
-					fish_contain = True
 
-				#fish_contain = all(x in field_input for x in contain_rules_split)
-				#fish_contain = all(word in field_input for word in contain_rules_split)
-			not_contain_rules_split_ = dict_not_contain[field_rule_]
-			for rule in not_contain_rules_split_:
-				not_contain_rules_split = rule.split('+')
-				rule_count = len(not_contain_rules_split)
-				for word in not_contain_rules_split:
-					if word.lower() not in field_input_:
-						rule_count -= 1
-				if rule_count > 0:
-					fish_not_contain = False
-				else:
-					fish_not_contain = True
+		#for every rule from rules.csv
+		for index, row in df_rules.iterrows():
+			fieldname_rule = row['fieldname']
+			contain = split_by(no_space(row['contain']), '+')
+			not_contain = split_by(no_space(row['not_contain']), '+')
+		
+			#listing fieldname rule into a dict
+			if fieldname_rule not in list_field_rule:
+				list_field_rule.append(fieldname_rule)
 
-			#fish_not_contain = all(x in field_input for x in not_contain_rules_split)
-			if fish_contain == True and fish_not_contain == True:
-				columns[field_input] = field_rule_
-				print(field_input + ' => ' + field_rule_)
-		if field_input not in columns:
-			columns[field_input] = field_input
-			
-	for i in list_field_rule:
-		if i not in
-	print(columns)
-
+			len_contain = len(contain)
+			len_not_contain = len(not_contain)
+			#matching fieldname input with fieldname output
+			for word in contain:
+				if str(word) in str(field_input):
+					len_contain -= 1
+			for word in not_contain:
+				if str(word) not in str(field_input):
+					len_not_contain -= 1
+			#print(field_input_, '==>',fieldname_rule, 'len_contain', str(len_contain),'len_not_contain', str(len_not_contain))
+			if len_contain < 1 and len_not_contain < 1:
+				columns[field_input_] = fieldname_rule
+				break
+			else:
+				columns[field_input_] = field_input_
+	print('			[File ' + csv + ' was successfully added.]')
 	new_df_convo = df_convo.rename(index=str, columns=columns)
-	new_df_convo = new_df_convo[pd.notnull(new_df_convo['post_id'])]
+	#merge files
 	df_temp = pd.concat([new_df_convo, df_all], sort=False)
 	df_all = df_temp
-	
+#dict for listing the column
 list_column = []
 for i in columns.values():
 	list_column.append(i)
-
 #Add fieldname if there is no fieldname_rule in input_files
 for i in list_field_rule:
 	if i not in list_column:
 		df_all[i] = ''
-df_all[list_column].to_csv(output_name)
+#print(list_column)
+number = 0
+print(' ')
+print('		<<<<<<<<<<<<< converting fieldname >>>>>>>>>>>>>')
+print('([old_fieldname_input] =>> [new_fieldname_input])')
+for column in list_column:
+	print(column, "=>>", list_column[number])
+	number += 1
+
+# customizing post_id, user_id, and caption
+df_all['post_id'] = df_all['post_id'].apply(lambda x: str(x).replace('"','').replace("'",""))
+df_all['user_id'] = df_all['user_id'].apply(lambda x: str(x).replace('"','').replace("'",""))
+df_all['caption'] = df_all['caption'].apply(lambda x: str(x).replace('b"','').replace("b'","").replace('\n',' ').replace('\t',' ').replace('\r',' '))
+df_all['caption'] = df_all['caption'].apply(lambda x: str(x).replace('"','').replace("'",""))
+df_all['post_id'] = "'" + df_all['post_id']
+df_all['user_id'] = "'" + df_all['user_id']
+df_all['caption'] = "'" + df_all['caption'] 
+
+fieldname_df_all = list(df_all)
+if 'index' in fieldname_df_all:
+	df_all = df_all.drop(columns=['index'])
+df_all.reset_index()
+df_all.index.names = ['index']
+df_all.to_csv(output_name, index=True)
 print('		[saved as ' + output_name+']')
-
-
-''' Old Code
-			for word in contain_rules_split:
-				if word in field_input:
-					fish = True
-
-
-
-		#post_id
-		if 'post' in header and 'id' in header:
-			columns[header] = 'post_id'
-		#caption
-		elif 'convo' in header or 'conversation' in header or 'text' in header or 'caption' in header:
-			columns[header] = 'caption'
-		#comment_count
-		elif 'comment' in header:
-			columns[header] = 'comment_count'
-		#date_post
-		elif 'date' in header:
-			columns[header] = 'date_post'
-		#follower_count
-		elif 'follower' in header:
-			columns[header] = 'follower_count'
-			follower_status = True
-		#following_count
-		elif 'following' in header:
-			columns[header] = 'following_count'
-		#like_count
-		elif 'like' in header and 'user' not in header:
-			columns[header] = 'like_count'
-		#timestamp
-		elif 'timestamp' in header:
-			columns[header] = 'timestamp'
-		#user_id
-		elif 'user' in header and 'id' in header:
-			columns[header] = 'user_id'
-		#username
-		elif 'user' in header and 'name' in header:
-			columns[header] = 'username'
-		else:
-			columns[header] = header
-	new_df_convo = df_convo.rename(index=str, columns=columns)
-	list_column = []
-	for i in columns.values():
-		list_column.append(i)
-	if follower_status == False:
-		print("[" + csv + " " + 'has no follower/following information]')
-		output_name = 'Invalid_' + csv
-
-	df_temp = pd.concat([new_df_convo, df_all])
-	df_all = df_temp
-	print('Converting ' + csv)
-
-df_all[list_column].to_csv(output_name)
-
-print('Done')
-
-'''
