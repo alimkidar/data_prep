@@ -7,7 +7,7 @@ dict_filename = "tagging_library.csv"
 input_filename = "convo.csv"
 
 #load convo
-convo = pd.read_csv(input_filename)
+convo = pd.read_csv(input_filename, index_col=False, encoding='utf-8')
 
 # Fieldname in (dict_filename)
 head_keywords = 'keywords'
@@ -39,7 +39,6 @@ def filter_words(sentence):
 	return sentence_lower
 
 #------------------ LOADING DATA ----------------------------
-print ("Memulai")
 #load dictionary file (dict_filename)
 mydict = {}
 dfdict = pd.read_csv(dict_filename)
@@ -69,9 +68,9 @@ for index, row in dfdict.iterrows():
 	list_category_group_match.append(category_group)
 list_category_group_match = list(set(list_category_group_match))
 
-#Seting Output6 ====================================================================
-output_name6 = "tagging_result.csv"
-f = open(output_name6, "w", encoding="utf-8")
+#Seting Output for result ====================================================================
+output_name = "tagging_result.csv"
+f = open(output_name, "w", encoding="utf-8")
 label = "username,post_id,caption,timestamp,keyword,category1,category2,category3\n"
 f.write(label)
 
@@ -158,7 +157,7 @@ for index, row in convo.iterrows():
 		else:
 			pass
 	hit += 1
-	print("Convo ke-" + str(hit) + " . Caption: " + caption)
+	print("Caption-" + str(hit) + " was checked.")
 f.close()
 
 # Counting ublisted hashtag
@@ -167,6 +166,7 @@ dict_unlisted_hashtag_count = Counter(dict_unlisted_hashtag)
 # Converting unlisted hashtag dataframe into csv file
 df_unlisted_hashtag = pd.DataFrame.from_dict(dict_unlisted_hashtag_count,orient='index').reset_index()
 df_unlisted_hashtag.columns = ['hashtag','count']
-df_unlisted_hashtag.to_csv('unlisted.csv')
-print("Data Tersimpan")
-print("Proses Selesai")
+df_unlisted_hashtag.to_csv('unlisted_hashtag.csv')
+print('		[Tagging Result: tagging_result.csv]')
+print('		[Unlisted Hashtag : unlisted_hashtag.csv]')
+print("Done!")
