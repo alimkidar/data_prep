@@ -14,12 +14,23 @@ head_caption = 'caption'
 head_postid = 'post_id'
 head_likes_count = 'like_count'
 head_comment_count = 'comment_count'
-head_brand = 'brand'
 head_date_post = 'date_post'
 head_follower_count = 'follower_count'
 head_following_count = 'following_count'
 #------------------ DATA LOADING --------------------------------
 print ("Memulai")
+hit = 1
+
+def to_number(string_):
+	try: x = int(string_)
+	except: x = 0
+	return x
+def anti_ducplicate(value_,group_,add_value_):
+	if value_ not in group_:
+		group_[value_] = add_value_
+	else: 
+		group_[value_] += add_value_
+
 #Pencatatan. Hasilnya nantinya akan | count_user_posts['username'] = jumlah post |
 count_user_posts = {}
 count_user_likes = {}
@@ -32,25 +43,24 @@ tb_statistic_convo = []
 tb_username = []
 count_user_post = {}
 for index, row in convo.iterrows():
-	user_id = row[head_userid].replace('"', '').replace("'","")
-	username = row[head_username].replace('"',"").replace(",","|").replace("'","")
+	user_id = row[head_userid]
+	username = str(row[head_username])
 	caption = str(row[head_caption]).replace(",","").replace(r"\u","|").replace("\r","").replace("\n","").replace("'","").lower().strip()
 	post_id = row[head_postid].replace('"','').replace("'","")
-	brand = row[head_brand]
 	timestamp = row['timestamp']
-	count_likes = str(row[head_likes_count])
-	count_comments = str(row[head_comment_count])
-	engagement_value = str(row[head_likes_count] + row[head_comment_count])
+	count_likes = to_number(row[head_likes_count])
+	count_comments = to_number(row[head_comment_count])
+	follower_count = to_number(row[head_follower_count])
+	following_count = to_number(row[head_following_count])
+	engagement_value = count_likes + count_comments
 
-
-	follower_count = row[head_follower_count]
-	following_count = row[head_following_count] 
+	if len(username) == 0:
+		username = 'x_' + str(hit)
 
 	if username not in tb_username:
 		tb_username.append(username)
 
 	tb_statistic_convo.append({
-		'brand' : brand,
 		'username' : username,
 		'post_id' : '"' + str(post_id),
 		'caption' : '"' + str(caption),
@@ -60,24 +70,18 @@ for index, row in convo.iterrows():
 		'engagement' : engagement_value
 		})
 	#================= Awal perhitungan jumlah post, like, komen, following, followers ==============================
-	if username not in count_user_posts:
-		count_user_posts[username] = 1
-	else: 
-		count_user_posts[username] += 1
-	if username not in count_user_likes:
-		count_user_likes[username] = row[head_likes_count]
-	else:
-		count_user_likes[username] += row[head_likes_count]
-	if username not in count_user_comments:
-		count_user_comments[username] = row[head_comment_count]
-	else:
-		count_user_comments[username] += row[head_comment_count]
-	count_user_followers[username] = row[head_follower_count]
-	count_user_following[username] = row[head_following_count] 
+	anti_ducplicate(username, count_user_posts, 1)
+	anti_ducplicate(username, count_user_likes, count_likes)
+	anti_ducplicate(username, count_user_comments, count_comments)
+	count_user_followers[username] = follower_count
+	count_user_following[username] = following_count
+	print('Caption-' + str(hit) + ' was checked. Username: ' + username) 
+	hit += 1
 	#================= Akhir perhitungan jumlah post, like, komen, following, followers ==============================
 
 df_statstic_convo = pd.DataFrame.from_dict(tb_statistic_convo)
-columns_order = ['brand', 'username', 'post_id', 'caption', 'timestamp', 'like_count', 'comment_count', 'engagement']
+columns_order = ['username', 'post_id', 'caption', 'timestamp', 'like_count', 'comment_count', 'engagement']
+df_statstic_convo.index.names = ['index']
 df_statstic_convo[columns_order].to_csv('performance_convo.csv')
 print("performance_convo.csv")
 for username in tb_username:
@@ -105,5 +109,6 @@ for username in tb_username:
 		})
 df_statstic_user = pd.DataFrame.from_dict(tb_statistic_user)
 columns_user_order =['username','total_post','total_like','average_like','total_comment','average_comment','engagement','follower_count','following_count','reach']
+df_statstic_user.index.names = ['index']
 df_statstic_user[columns_user_order].to_csv('performance_user.csv')
 print("performance_user.csv")
