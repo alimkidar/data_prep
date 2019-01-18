@@ -1,23 +1,32 @@
 import pandas as pd
-import requests
-import json
-import re
+import requests, json, re, datetime
 
 
 #------------------ CONFIGURATION -------------------------------
 input_filename = "convo.csv"
 print_every = 10
 print_every_bak = print_every
-#load convo
-convo = pd.read_csv(input_filename)
-
 head_username = 'username'
 
-def save_df(dict_,output_):
-		df_profile = pd.DataFrame.from_dict(dict_)
-		column_order = ['username','full_name','biography','external_url','follower_count','following_count','has_channel','user_id','is_business_account','business_category_name','business_email','business_phone_number','is_private','is_verified','profile_pic_url','connected_fb_page','media_count', 'status']
-		df_profile[column_order].to_csv(output_)
-		print("Data disimpan dalam " + output_)
+print ("Initializing...")
+#load convo
+df_convo = pd.read_csv(input_filename)
+today_date = datetime.datetime.today()
+print(today_date.strftime('%A, %d-%B-%Y'))
+
+def save_df(dict_,output_,df_old):
+	df_profile = pd.DataFrame.from_dict(dict_)
+	
+	#Merge input data with new data
+	for fieldname in list(df_profile):
+		df_old[fieldname] = df_profile[fieldname]
+	#column_order = ['username','full_name','biography','external_url','follower_count','following_count','has_channel','user_id','is_business_account','business_category_name','business_email','business_phone_number','is_private','is_verified','profile_pic_url','connected_fb_page','media_count', 'status']
+	if 'index' in list(df_old):
+		df_old = df_old.drop(columns=['index'])
+	df_old.reset_index()
+	df_old.index.names = ['index']
+	df_old.to_csv(output_,index=True)
+	return print("saved as " + output_)
 
 #Untuk ambil jumlah followers dan following di instagram
 def insta(user_name):
@@ -99,7 +108,7 @@ print ("Memulai")
 dict_profile = []
 hit = 1
 
-for index, row in convo.iterrows():
+for index, row in df_convo.iterrows():
 	username = str(row[head_username])
 	if username == 'nan':
 		username = ''
@@ -115,9 +124,8 @@ for index, row in convo.iterrows():
 	print_every -= 1
 
 	if print_every <= 0:
-		save_df(dict_profile,'profile_result.csv')
+		save_df(dict_profile,'convo_enriched.csv',df_convo)
 		print_every = print_every_bak
 
-save_df(dict_profile,'profile_result.csv')
-print("Data disimpan dalam profile_result.csv")
-print("Proses Selesai")
+save_df(dict_profile,'convo_enriched.csv',df_convo)
+print("Done")
