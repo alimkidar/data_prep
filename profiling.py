@@ -7,8 +7,8 @@ import re
 
 
 #------------------ CONFIGURATION -------------------------------
-dict_filename = "interest_library.csv"
-input_filename = "convo.csv"
+dict_filename = "config/lib_interests.csv"
+input_filename = "output/convo_high.csv"
 
 
 #load convo
@@ -68,13 +68,13 @@ for i in list_interest:
 
 
 # Output 1 =============================
-output_name2 = "profiling_result.csv"
-g = open(output_name2, "w")
+output_name2 = "output/profiling_result.csv"
+g = open(output_name2, "w", encoding="utf-8")
 label2 = "username" + str_sumof_interest + "\n"
 g.write(label2)
 
 #Output 2 =============================
-output_name4 = "profiling_convo.csv"
+output_name4 = "output/profiling_convo.csv"
 z = open(output_name4, "w")
 label4 = "username,post_id,caption,keyword,sub_interest\n"
 z.write(label4)

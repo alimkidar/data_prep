@@ -1,9 +1,11 @@
 import pandas as pd
 import requests, json, re, datetime
+from logger import Logger
+time_now = str(int(datetime.datetime.now().timestamp()))
 
 
 #------------------ CONFIGURATION -------------------------------
-input_filename = "convo.csv"
+input_filename = "output/convo.csv"
 print_every = 10
 print_every_bak = print_every
 head_username = 'username'
@@ -127,5 +129,7 @@ for index, row in df_convo.iterrows():
 		save_df(dict_profile,'convo_enriched.csv',df_convo)
 		print_every = print_every_bak
 
-save_df(dict_profile,'convo_enriched.csv',df_convo)
+save_df(dict_profile,'output/convo.csv',df_convo)
+save_df(dict_profile,'temp/convo_enriched_' + time_now + '.csv',df_convo)
+Logger('[' + time_now + " file {'convo.csv'} had been enriched with name " + "'temp/convo_enriched_" + time_now + ".csv'\n").write_log()
 print("Done")

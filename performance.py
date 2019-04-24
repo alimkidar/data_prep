@@ -2,7 +2,7 @@ from collections import Counter
 import pandas as pd
 
 #------------------ CONFIGURATION -------------------------------
-input_filename = "convo.csv"
+input_filename = "output/convo_high.csv"
 
 #load convo
 convo = pd.read_csv(input_filename)
@@ -82,7 +82,7 @@ for index, row in convo.iterrows():
 df_statstic_convo = pd.DataFrame.from_dict(tb_statistic_convo)
 columns_order = ['username', 'post_id', 'caption', 'timestamp', 'like_count', 'comment_count', 'engagement']
 df_statstic_convo.index.names = ['index']
-df_statstic_convo[columns_order].to_csv('performance_convo.csv')
+df_statstic_convo[columns_order].to_csv('output/performance_convo.csv')
 print("performance_convo.csv")
 for username in tb_username:
 	total_post = count_user_posts[username]
@@ -110,5 +110,5 @@ for username in tb_username:
 df_statstic_user = pd.DataFrame.from_dict(tb_statistic_user)
 columns_user_order =['username','total_post','total_like','average_like','total_comment','average_comment','engagement','follower_count','following_count','reach']
 df_statstic_user.index.names = ['index']
-df_statstic_user[columns_user_order].to_csv('performance_user.csv')
-print("performance_user.csv")
+df_statstic_user[columns_user_order].to_csv('output/performance_user.csv')
+print("output/performance_user.csv")
